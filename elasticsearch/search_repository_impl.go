@@ -12,14 +12,20 @@ import (
 )
 
 type ElasticSearchRepositoryImpl struct {
+	Host string
+	Port string
 }
 
-func NewSearchRepository() SearchRepository {
-	return &ElasticSearchRepositoryImpl{}
+func NewSearchRepository(host string, port string) SearchRepository {
+	return &ElasticSearchRepositoryImpl{
+		Host: host,
+		Port: port,
+	}
 }
 
 func (repository *ElasticSearchRepositoryImpl) getClient() *elastic.Client {
-	client, err := elastic.NewClient(elastic.SetURL("http://localhost:9200"), elastic.SetSniff(false), elastic.SetHealthcheck(false))
+	URL := fmt.Sprintf("http://%v:%v", repository.Host, repository.Port)
+	client, err := elastic.NewClient(elastic.SetURL(URL), elastic.SetSniff(false), elastic.SetHealthcheck(false))
 	helper.PanicIfErr(err)
 
 	fmt.Println("Success Initialized ES")
@@ -28,7 +34,6 @@ func (repository *ElasticSearchRepositoryImpl) getClient() *elastic.Client {
 }
 
 func (repository *ElasticSearchRepositoryImpl) Insert(ctx context.Context, article model.ElasticArticle) {
-	fmt.Println("insert articles elastic", article)
 	esclient := repository.getClient()
 
 	jsonData, err := json.Marshal(article)
@@ -36,33 +41,35 @@ func (repository *ElasticSearchRepositoryImpl) Insert(ctx context.Context, artic
 
 	json := string(jsonData)
 
-	_, err = esclient.Index().Index("articles").BodyJson(json).Do(ctx)
+	_, err = esclient.Index().Index("articles").BodyJson(json).Id(article.Id.String()).Do(ctx)
 	helper.PanicIfErr(err)
 }
 
 func (repository *ElasticSearchRepositoryImpl) Query(ctx context.Context, param request.ArticleGetRequest) []model.ElasticArticle {
-	fmt.Println("query elastic", param)
 	esclient := repository.getClient()
 
 	var articles []model.ElasticArticle
 
 	searchSource := elastic.NewSearchSource()
-	searchSource.Query(elastic.NewMatchQuery("title", param.Query))
-	searchSource.Query(elastic.NewMatchQuery("body", param.Query))
-	searchSource.Query(elastic.NewMatchQuery("author", param.Author))
+	searchSource.Query(elastic.NewMultiMatchQuery(param.Query, "Title", "Body"))
+	searchSource.Query(elastic.NewBoolQuery().Should(
+		elastic.NewMultiMatchQuery(param.Query, "Title", "Body"),
+		elastic.NewMatchQuery("Author", param.Query),
+		elastic.NewWildcardQuery("Author", param.Author),
+		elastic.NewWildcardQuery("Title", param.Query),
+		elastic.NewWildcardQuery("Body", param.Query),
+	))
 
-	queryStr, err := searchSource.Source()
-	helper.PanicIfErr(err)
+	// queryStr, err := searchSource.Source()
+	// helper.PanicIfErr(err)
 
-	queryJson, err := json.Marshal(queryStr)
-	fmt.Println("queryJson === ", string(queryJson))
-	helper.PanicIfErr(err)
+	// queryJson, err := json.Marshal(queryStr)
+	// helper.PanicIfErr(err)
 
 	searchService := esclient.Search().Index("articles").SearchSource(searchSource)
 
 	searchResult, err := searchService.Do(ctx)
 	helper.PanicIfErr(err)
-	fmt.Println("searchresult = ", searchResult)
 	for _, hit := range searchResult.Hits.Hits {
 		var article model.ElasticArticle
 		err := json.Unmarshal(hit.Source, &article)

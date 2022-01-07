@@ -2,6 +2,7 @@ package main
 
 import (
 	"article/cache"
+	"article/config"
 	article_controller "article/controller"
 	"article/database"
 	"article/elasticsearch"
@@ -11,6 +12,7 @@ import (
 	author_repository "article/repository/author"
 	article_service "article/service/article"
 	"context"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -19,20 +21,24 @@ import (
 )
 
 func main() {
-	// OR: Read migrations from a folder:
-	DB := database.InitDB()
+	// load env variable
+	appConfig, err := config.LoadConfig(".")
+	helper.PanicIfErr(err)
+
+	// init DB
+	DB := database.InitDB(appConfig.DBUser, appConfig.DBName, appConfig.DBPass, appConfig.DBHost, appConfig.DBPort)
 	ctx := context.Background()
 
 	// repository
 	articleRepository := article_repository.NewArticleRepository()
 	authorRepository := author_repository.NewAuthorRepository()
-	searchRepository := elasticsearch.NewSearchRepository()
+	searchRepository := elasticsearch.NewSearchRepository(appConfig.ElasticHost, appConfig.ElasticPort)
 
 	// service
 	articleService := article_service.NewArticleService(DB, articleRepository, authorRepository, validator.New(), searchRepository)
 
 	// cache
-	articleRedisCache := cache.NewRedisCacheImpl(ctx, "localhost:6379", 0, 1*time.Hour)
+	articleRedisCache := cache.NewRedisCacheImpl(ctx, fmt.Sprintf("%v:%v", appConfig.RedisHost, appConfig.RedisPort), 0, 1*time.Hour)
 
 	// controller
 	articleController := article_controller.NewArticleService(articleService, articleRedisCache)
@@ -52,6 +58,7 @@ func main() {
 		Handler: router,
 	}
 
-	err := server.ListenAndServe()
+	err = server.ListenAndServe()
 	helper.PanicIfErr(err)
+	fmt.Println("Server Running at", server.Addr)
 }
