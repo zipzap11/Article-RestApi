@@ -73,7 +73,7 @@ func (service *ArticleServiceImpl) CreateArticle(ctx context.Context, request re
 
 	elasticData := model.ElasticArticle{
 		Id:     createdData.Id,
-		Author: createdData.AuthorId.String(),
+		Author: request.Name,
 		Title:  createdData.Title,
 		Body:   createdData.Body,
 	}
