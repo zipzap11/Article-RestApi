@@ -1,0 +1,38 @@
+version: "3.8"
+
+services:
+  postgres:
+    container_name: postgres
+    image: postgres:12-alpine
+    ports:
+      - 5432:5432
+  redis:
+    container_name: redis
+    image: redis:latest
+    ports:
+      - 6379:6379
+  elasticsearch:
+    container_name: elasticsearch
+    image: elasticsearch:7.16.2
+    ports:
+      - 9200:9200
+  api:
+    depends_on:
+      - postgres
+      - redis
+      - elasticsearch
+    build: 
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 8000:8000
+    environment:
+      - POSTGRES_DB: golang_articles
+      - POSTGRES_USER: root
+      - POSTGRES_PASSWORD: secret
+      - POSTGRES_HOST: postgres
+      - POSTGRES_PORT: 5432
+      - REDIS_HOST: redis
+      - REDIS_PORT: 6379
+      - ELASTIC_HOST: elasticsearch
+      - ELASTIC_PORT: 9200
