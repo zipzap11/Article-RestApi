@@ -32,20 +32,20 @@ func (repository *ArticleRepositoryImpl) GetByMultiID(ctx context.Context, tx *s
 		panic(exception.NewNotFoundError("not found author id"))
 	}
 
-	fmt.Println("inject", helper.DynamicInject(len(ids)))
-
-	SQL := fmt.Sprintf(`SELECt articles.id, author_id, title, body, created_at, authors.name FROM articles 
-			INNER JOIN authors ON articles.author_id = authors.id WHERE articles.id IN 
+	SQL := fmt.Sprintf(`SELECT articles.id, author_id, title, body, created_at, authors.name FROM articles
+			INNER JOIN authors ON articles.author_id = authors.id WHERE articles.id IN
 			%v ORDER BY articles.created_at DESC LIMIT 50;`, helper.DynamicInject(len(ids)))
 
-	rows, err := tx.QueryContext(ctx, SQL, ids)
+	convertedIds := helper.ToInterfaceSLice(ids)
+	rows, err := tx.QueryContext(ctx, SQL, convertedIds...)
 	helper.PanicIfErr(err)
 	defer rows.Close()
 
+	fmt.Println()
 	var articles []model.ArticleAuthor
 	for rows.Next() {
 		temp := model.ArticleAuthor{}
-		rows.Scan(temp.Id, temp.AuthorId, temp.Title, temp.Body, temp.CreatedAt, temp.Name)
+		rows.Scan(&temp.Id, &temp.AuthorId, &temp.Title, &temp.Body, &temp.CreatedAt, &temp.Name)
 
 		articles = append(articles, temp)
 	}
