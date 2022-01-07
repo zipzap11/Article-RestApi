@@ -20,6 +20,9 @@ func JoinIds(tuples []uuid.UUID) string {
 }
 
 func DynamicInject(n int) string {
+	if n == 1 {
+		return "($1)"
+	}
 	res := "("
 	for i := 1; i <= n; i++ {
 		if i == 1 {
@@ -31,6 +34,15 @@ func DynamicInject(n int) string {
 			break
 		}
 		res += fmt.Sprintf(", $%v", i)
+	}
+
+	return res
+}
+
+func ToInterfaceSLice(ids []uuid.UUID) []interface{} {
+	res := make([]interface{}, len(ids))
+	for i, val := range ids {
+		res[i] = val
 	}
 
 	return res
