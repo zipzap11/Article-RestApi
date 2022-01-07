@@ -22,8 +22,8 @@ func migrateDB(db *sql.DB) {
 	fmt.Println("applied migration", n, "times")
 }
 
-func InitDB() *sql.DB {
-	connStr := "user=root dbname=golang_articles password=secret host=localhost sslmode=disable"
+func InitDB(user string, name string, password string, host string, port string) *sql.DB {
+	connStr := fmt.Sprintf("user=%v dbname=%v password=%v host=%v port=%v sslmode=disable", user, name, password, host, port)
 
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {

@@ -12,14 +12,20 @@ import (
 )
 
 type ElasticSearchRepositoryImpl struct {
+	Host string
+	Port string
 }
 
-func NewSearchRepository() SearchRepository {
-	return &ElasticSearchRepositoryImpl{}
+func NewSearchRepository(host string, port string) SearchRepository {
+	return &ElasticSearchRepositoryImpl{
+		Host: host,
+		Port: port,
+	}
 }
 
 func (repository *ElasticSearchRepositoryImpl) getClient() *elastic.Client {
-	client, err := elastic.NewClient(elastic.SetURL("http://localhost:9200"), elastic.SetSniff(false), elastic.SetHealthcheck(false))
+	URL := fmt.Sprintf("http://%v:%v", repository.Host, repository.Port)
+	client, err := elastic.NewClient(elastic.SetURL(URL), elastic.SetSniff(false), elastic.SetHealthcheck(false))
 	helper.PanicIfErr(err)
 
 	fmt.Println("Success Initialized ES")

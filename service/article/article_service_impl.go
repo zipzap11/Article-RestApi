@@ -11,7 +11,6 @@ import (
 	author_repo "article/repository/author"
 	"context"
 	"database/sql"
-	"fmt"
 	"time"
 
 	"github.com/go-playground/validator/v10"
@@ -53,7 +52,6 @@ func (service *ArticleServiceImpl) CreateArticle(ctx context.Context, request re
 		helper.PanicIfErr(err)
 
 	} else {
-		fmt.Println("author id = ", authorData.Id)
 		authorById, err := service.AuthorRepo.GetById(ctx, tx, authorData.Id)
 		if err != nil {
 			panic(exception.NewNotFoundError(err.Error()))
@@ -83,22 +81,18 @@ func (service *ArticleServiceImpl) CreateArticle(ctx context.Context, request re
 }
 
 func (service *ArticleServiceImpl) GetArticles(ctx context.Context, request request.ArticleGetRequest) []response.ArticleGet {
-	fmt.Println("request = ", request)
 
 	tx, err := service.DB.Begin()
 	helper.PanicIfErr(err)
 	defer helper.CommmitOrRollback(tx)
 
 	if request.Author == "" && request.Query == "" {
-		fmt.Println("masuk if")
 		articles := service.ArticleRepo.GetAll(ctx, tx)
-		fmt.Println("articles ==", articles)
 		return helper.ToArticleResponseSlice(articles)
 	}
-	fmt.Println("lolos if")
+
 	result := service.SearchRepository.Query(ctx, request)
 	var ids []uuid.UUID
-	fmt.Println("result from ES", result)
 	for _, data := range result {
 		ids = append(ids, data.Id)
 	}
