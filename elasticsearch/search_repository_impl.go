@@ -28,7 +28,6 @@ func (repository *ElasticSearchRepositoryImpl) getClient() *elastic.Client {
 }
 
 func (repository *ElasticSearchRepositoryImpl) Insert(ctx context.Context, article model.ElasticArticle) {
-	fmt.Println("insert articles elastic", article)
 	esclient := repository.getClient()
 
 	jsonData, err := json.Marshal(article)
@@ -41,7 +40,6 @@ func (repository *ElasticSearchRepositoryImpl) Insert(ctx context.Context, artic
 }
 
 func (repository *ElasticSearchRepositoryImpl) Query(ctx context.Context, param request.ArticleGetRequest) []model.ElasticArticle {
-	fmt.Println("query elastic", param.Author, param.Query)
 	esclient := repository.getClient()
 
 	var articles []model.ElasticArticle
