@@ -31,14 +31,6 @@ func NewRedisCacheImpl(ctx context.Context, host string, db int, expires time.Du
 	}
 }
 
-// func (cache *RedisCacheImpl) getClient() *redis.Client {
-// 	return redis.NewClient(&redis.Options{
-// 		Addr:     "localhost:6379",
-// 		Password: "", // no password set
-// 		DB:       0,
-// 	})
-// }
-
 func (cache *RedisCacheImpl) Set(key string, value []response.ArticleGet) {
 	client := cache.Client
 
