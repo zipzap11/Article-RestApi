@@ -11,6 +11,8 @@ services:
       - POSTGRES_USER=root
       - POSTGRES_PASSWORD=secret
       - DB_NAME=golang_articles
+    volumes:
+      - ./database:/docker-entrypoint-initdb.d/
   redis:
     container_name: redis
     image: redis:latest
