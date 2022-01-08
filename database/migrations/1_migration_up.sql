@@ -12,4 +12,5 @@ CREATE TABLE "articles" (
   "created_at" timestamp NOT NULl
 );
 ALTER TABLE "articles" ADD FOREIGN KEY ("author_id") REFERENCES "authors" ("id");
+CREATE INDEX idx_articles_id ON articles (id);
 -- +migrate StatementEnd
