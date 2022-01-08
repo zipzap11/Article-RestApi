@@ -6,6 +6,11 @@ services:
     image: postgres:12-alpine
     ports:
       - 5432:5432
+    restart: always
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=secret
+      - DB_NAME=golang_articles
   redis:
     container_name: redis
     image: redis:latest
