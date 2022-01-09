@@ -1,5 +1,5 @@
 # Article REST-API
-Rest API for articles data created using Go programming language with some requiremens to handle:
+Rest API for articles data created using Go programming language with some requirements to handle:
 - Thousands of articles in database
 - Many user accessing API at the same time
 
