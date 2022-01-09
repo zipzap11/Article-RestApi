@@ -17,6 +17,9 @@ Rest API for articles data created using Go programming language with some requi
 - To handle thousands articles in database and searching feature with query to look inside title and body   of the article, i use elasticsearch as the search engine. So i use two database, one for storing master data and elasticsearch for searching optimization
 - To handle many user access at the same time, i use redis to cache the response. So if someone do GET request, it indirectly querying to database, instead go lookup to the cache. If there is some resources cached, then simply return it as the response.
 
+High level design (more detail --> [whimsical](https://whimsical.com/CBkzTKAYHWvCWJuDyaFu1J))
+![high level design](https://github.com/zipzap11/Article-RestApi/blob/master/high_level_design.PNG)
+
 ## Run
 To run this you can pull some images from dockerhub
 #### Postgres
